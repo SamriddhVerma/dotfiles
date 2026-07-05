@@ -1,0 +1,116 @@
+local terminal = "kitty"
+local fileManager = "thunar"
+local menu = "fuzzel"
+local mainMod = "SUPER"
+
+-- MONITORS
+hl.monitor({
+  output = "",
+  mode = "preferred",
+  position = "auto",
+  scale = 1,
+})
+
+-- AUTOSTART
+hl.on("hyprland.start", function()
+  hl.exec_cmd('mpvpaper -o "no-audio --loop" "*" ~/wallpaper.mp4')
+  hl.exec_cmd("qs")
+end)
+
+-- ENV
+hl.env("XCURSOR_SIZE", "24")
+hl.env("HYPRCURSOR_SIZE", "24")
+
+-- CONFIG
+hl.config({
+  general = {
+    gaps_in = 0,
+    gaps_out = 0,
+    border_size = 0,
+    resize_on_border = false,
+    allow_tearing = false,
+    layout = "dwindle",
+
+    col = {
+      active_border = {
+        colors = { "rgba(33ccffee)", "rgba(00ff99ee)" },
+        angle = 45,
+      },
+      inactive_border = "rgba(595959aa)",
+    },
+  },
+
+  decoration = {
+    rounding = 0,
+    rounding_power = 0,
+    active_opacity = 1.0,
+    inactive_opacity = 1.0,
+
+    shadow = {
+      enabled = true,
+      range = 10,
+      render_power = 4,
+      color = "rgba(1a1a1aee)"
+    },
+
+    blur = {
+      enabled = true,
+      size = 3,
+      passes = 1,
+      brightness = 0.40,
+      vibrancy = 0.1696
+    }
+  },
+
+  dwindle = {
+    preserve_split = true
+  },
+
+  master = {
+    new_status = "master"
+  },
+
+  input = {
+    kb_layout = "us",
+    follow_mouse = 1,
+    sensitivity = 0,
+
+    touchpad = {
+      natural_scroll = false
+    }
+  },
+
+  misc = {
+    force_default_wallpaper = -1,
+    disable_hyprland_logo = false
+  }
+})
+
+-- GESTURES
+-- hl.raw("gesture = 3, horizontal, workspace")
+
+-- KEYBINDS
+hl.bind(mainMod .. " + Q", hl.action.exec(terminal))
+hl.bind(mainMod .. " + E", hl.action.exec(fileManager))
+hl.bind(mainMod .. " + R", hl.action.exec(menu))
+hl.bind(mainMod .. " + C", hl.dsp.window.close())
+hl.bind(mainMod .. " + V", hl.dsp.window.toggle_floating())
+
+for i = 1, 10 do
+  local ws = tostring(i == 10 and 0 or i)
+  local target = tostring(i)
+
+  hl.bind(mainMod .. " + " .. ws,
+    hl.action.dispatch("workspace " .. target))
+
+  hl.bind(mainMod .. " + SHIFT + " .. ws,
+    hl.action.dispatch("movetoworkspace " .. target))
+end
+
+-- MEDIA KEYS
+hl.raw('bindel = ,XF86AudioRaiseVolume, exec, wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+')
+hl.raw('bindel = ,XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-')
+hl.raw('bindel = ,XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle')
+
+-- WINDOW RULES
+hl.raw('windowrule = suppressevent maximize,class:.*')
