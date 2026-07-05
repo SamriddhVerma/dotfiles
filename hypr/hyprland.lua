@@ -31,7 +31,7 @@ local menu        = "fuzzel"
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function()
-  hl.exec_cmd("prime-run mpvpaper -o \"no-audio --loop\" '*' ~/wallpaper.mp4")
+  hl.exec_cmd("prime-run mpvpaper -o \"no-audio --loop\" '*' /opt/shared-configs/wallpaper.jpg")
   hl.exec_cmd("qs")
   hl.exec_cmd("kitty --class sticky-notes sh -c 'while true; do nvim ~/notes.md; sleep 0.3; done'")
 end)
