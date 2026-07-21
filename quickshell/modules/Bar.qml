@@ -9,6 +9,10 @@ import "./components"
 PanelWindow {
     id: root
 
+    // Injected by the Variants delegate in shell.qml (one per screen).
+    required property var modelData
+    screen: modelData
+
     // WlrLayershell.layer: WlrLayer.Bottom
 
     Component.onCompleted: {
