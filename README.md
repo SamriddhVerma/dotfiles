@@ -62,7 +62,8 @@ sudo pacman -S --needed \
   grim slurp wl-clipboard \
   brightnessctl playerctl \
   pipewire pipewire-pulse wireplumber \
-  networkmanager upower bluez bluez-utils
+  networkmanager upower bluez bluez-utils \
+  hyprlock hypridle
 
 # Neovim (LazyVim) + common tooling
 sudo pacman -S --needed neovim git ripgrep fd
@@ -121,6 +122,12 @@ back with `git`.
 - **Hyprland** uses the Lua config (`hypr/hyprland.lua`); make sure your
   Hyprland build supports the Lua configuration API. The `.bak` files are the
   previous plain-text config kept for reference.
+- **KDE Plasma (Wayland) replay buffer** (`kde/`): same "save the last 5 min"
+  feature as Hyprland's `SUPER + T`. KWin lacks wlr-screencopy (so no
+  `wf-recorder`); it uses `gpu-screen-recorder` instead. Run
+  `sudo pacman -S gpu-screen-recorder`, then `kde/install.sh` per user. It
+  autostarts the recorder and binds `Meta + T`; clips go to `~/Videos/replays/`.
+  The first start shows a screen-share portal prompt once.
 - **Quickshell** is launched automatically from Hyprland (`qs`) and relies on
   the Pipewire, UPower, Bluetooth and NetworkManager services above.
 - **Neovim** bootstraps its plugins on first launch via LazyVim; `git`,

@@ -16,7 +16,7 @@ hl.monitor({
 
 -- Set programs that you use
 local terminal = "kitty"
-local fileManager = "thunar"
+local fileManager = "dolphin"
 local menu = "fuzzel"
 
 -------------------
@@ -31,7 +31,21 @@ local menu = "fuzzel"
 hl.on("hyprland.start", function()
 	hl.exec_cmd("prime-run mpvpaper -o \"no-audio --loop\" '*' /opt/shared-configs/wallpaper.jpg")
 	hl.exec_cmd("qs")
-	hl.exec_cmd("kitty --class sticky-notes sh -c 'while true; do nvim ~/notes.md; sleep 0.3; done'")
+	-- hl.exec_cmd("kitty --class sticky-notes sh -c 'while true; do nvim ~/notes.md; sleep 0.3; done'")
+
+	-- Clipboard: keep contents alive after the source app closes, and
+	-- record history (text + images) into cliphist for the bar widget.
+	hl.exec_cmd("wl-clip-persist --clipboard regular")
+	hl.exec_cmd("wl-paste --type text --watch cliphist store")
+	hl.exec_cmd("wl-paste --type image --watch cliphist store")
+
+	-- Always-on rolling replay buffer (last few minutes), flushed to disk
+	-- with SUPER + T.
+	hl.exec_cmd("/opt/shared-configs/hypr/replay-buffer-record.sh")
+
+	-- Idle daemon: auto-locks the screen after inactivity and locks before
+	-- the system suspends (see hypridle.conf).
+	hl.exec_cmd("pidof hypridle || hypridle")
 end)
 
 -------------------------------
@@ -42,6 +56,15 @@ end)
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+
+-- Hybrid Intel/NVIDIA (Optimus) suspend/resume stability. Hyprland renders
+-- on the Intel iGPU (NVIDIA is offload-only via prime-run), so we don't
+-- force NVIDIA as the primary GBM/EGL backend here; these just make sure
+-- prime-run'd apps pick the right driver and avoid a known hardware-cursor
+-- crash on resume with hybrid GPUs.
+hl.env("LIBVA_DRIVER_NAME", "nvidia")
+hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+hl.env("WLR_NO_HARDWARE_CURSORS", "1")
 
 -----------------------
 ----- PERMISSIONS -----
@@ -246,6 +269,7 @@ hl.bind(
 	mainMod .. " + M",
 	hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'")
 )
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("pidof hyprlock || hyprlock"))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
@@ -278,8 +302,10 @@ hl.bind(mainMod .. " + SHIFT + grave", hl.dsp.window.move({ workspace = "special
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
 
--- Switch focus (and warp the cursor) between monitors, cycling
-hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("hyprctl dispatch focusmonitor +1"))
+-- Switch focus (and warp the cursor) between monitors, cycling.
+-- NOTE: in Lua dispatch mode `hyprctl dispatch focusmonitor +1` is parsed as
+-- Lua and fails; use the hl.dsp form, which also warps the cursor.
+hl.bind(mainMod .. " + Tab", hl.dsp.focus({ monitor = "+1" }))
 
 -- Monitor/display key (emits F1 on this laptop): cycle output layouts
 -- (screen only -> duplicate -> extend left -> extend right -> monitor only)
@@ -318,6 +344,14 @@ hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
 hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
+
+-------------------------------------
+---- REPLAY BUFFER SCREEN RECORDING ----
+-------------------------------------
+
+-- Rolling screen+audio recorder: keeps the last few minutes buffered at all
+-- times. Press SUPER + T to flush the last 5 minutes to ~/Videos/replays/.
+hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("/opt/shared-configs/hypr/save-replay.sh"))
 
 --------------------------------
 ---- WINDOWS AND WORKSPACES ----
@@ -376,5 +410,15 @@ hl.window_rule({
 	workspace = "special:notes",
 	float = true,
 	size = "640 720",
+	center = true,
+})
+
+-- Waydroid WhatsApp: floating, centered, resizable
+hl.window_rule({
+	name = "waydroid-apps",
+	match = { class = "^waydroid\\..*" },
+
+	float = true,
+	size = "900 800",
 	center = true,
 })

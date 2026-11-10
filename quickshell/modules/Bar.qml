@@ -45,7 +45,7 @@ PanelWindow {
 
     RowLayout {
 
-        spacing: 12
+        spacing: 18
 
         anchors {
             fill: parent
@@ -57,6 +57,10 @@ PanelWindow {
 
         Rectangle {
             Layout.fillWidth: true
+        }
+
+        ClipboardControl {
+            popups: popups
         }
 
         NetworkControl {
